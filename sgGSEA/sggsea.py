@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def rank_genes(path_to_network: str, target_gene_set: list[str], centrality: str, sep: str = ' ',
-               num_permutations: int = 100, damping: float=0.85, query_gene_set: list[str] | None = None) \
+               num_permutations: int = 100, damping: float=0.85, query_gene_set=None) \
         -> pd.DataFrame:
     """Ranks the genes in the query gene set via empirical P-values based on their network centralities w.r.t. the
     target gene set.
