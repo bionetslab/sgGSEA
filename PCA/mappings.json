@@ -1,0 +1,31 @@
+{
+  "pd": {
+    "MN7_with_T": "Ctrl human Midbrain Organoid + Ctrl T cells",
+    "RN4_with_T": "Ctrl human Midbrain Organoid + Ctrl T cells",
+    "RN4_with_T_1": "Ctrl human Midbrain Organoid + Ctrl T cells",
+    "GG7_with_T": "PD human Midbrain Organoid + Ctrl T cells",
+    "GG7_with_T_1": "PD human Midbrain Organoid + Ctrl T cells",
+    "RN4_wo_T": "Ctrl human Midbrain Organoid without T cells",
+    "RN4_wo_T_1": "Ctrl human Midbrain Organoid without T cells",
+    "MN7_wo_T": "Ctrl human Midbrain Organoid without T cells",
+    "MN7_wo_T_1": "Ctrl human Midbrain Organoid without T cells",
+    "GG7_wo_T": "PD human Midbrain Organoid without T cells",
+    "GG7_wo_T_1":  "PD human Midbrain Organoid without T cells"
+  },
+  "ibd": {
+    "IBD7": "human Cerebral Organoid + IBD Tcells",
+    "IBD7_1": "human Cerebral Organoid + IBD Tcells",
+    "IBD8": "human Cerebral Organoid + IBD Tcells",
+    "IBD8_1": "human Cerebral Organoid + IBD Tcells",
+    "IBD10": "human Cerebral Organoid + IBD Tcells",
+    "IBD10_1": "human Cerebral Organoid + IBD Tcells",
+    "CtrlBF": "human Cerebral Organoid + Ctrl Tcells",
+    "CtrlBF_1": "human Cerebral Organoid + Ctrl Tcells",
+    "CtrlDM": "human Cerebral Organoid + Ctrl Tcells",
+    "CtrlDM_1": "human Cerebral Organoid + Ctrl Tcells",
+    "CtrlTL": "human Cerebral Organoid + Ctrl Tcells",
+    "CtrlTL_1": "human Cerebral Organoid + Ctrl Tcells",
+    "hCO_wo_Tc": "human Cerebral Organoid w/o Tcells",
+    "hCO_wo_Tc_1": "human Cerebral Organoid w/o Tcells"
+  }
+}
