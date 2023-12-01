@@ -1,4 +1,5 @@
 import pandas as pd 
+import numpy as np
 
 def get_query_gene_set(path: str, alpha: float = 0.05):
     query_gene_set = pd.read_csv(path)

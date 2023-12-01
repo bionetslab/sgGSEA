@@ -1,5 +1,8 @@
+.RData
+.RHistory
 # DS_Store
 *.DS_Store
+venn_diagrams.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -122,10 +125,12 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+
 # Environments
 .env
 .venv
 env/
+
 venv/
 ENV/
 env.bak/

@@ -1,5 +1,5 @@
 import gseapy as gp
-
+import numpy as np
 
 def show_library_names(organism: str = 'human') -> list[str]:
     """Shows names of all queryable gene set libraries.
@@ -31,3 +31,24 @@ def show_gene_set_names(library: dict[str, list[str]]) -> list[str]:
 
 def get_gene_set(library: dict[str, list[str]], gene_set_name: str) -> list[str]:
     return library[gene_set_name]
+
+def get_genes_for_multiple_pathway_process(pathways):
+    pathways = {p: None for p in pathways}
+    for version in ["2013", "2015", "2017", "2017b", "2018", "2021", "2023"][::-1]:
+        go_bp = get_library(f'GO_Biological_Process_{version}')
+        gene_sets = show_gene_set_names(go_bp)
+        for p in pathways:
+            if not pathways[p]:
+                for g in gene_sets:
+                    if p in g:
+                        pathways[p] = get_gene_set(go_bp, g)
+    
+    target_gene_set = list()
+    for k in pathways:
+        try:
+            target_gene_set += pathways[k]
+        except:
+            print(k, "not found")
+    target_gene_set = np.unique(target_gene_set)
+    return target_gene_set
+        

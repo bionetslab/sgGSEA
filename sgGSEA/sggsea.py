@@ -2,10 +2,12 @@ import graph_tool as gt
 import graph_tool.centrality as gtc
 import graph_tool.generation as gtg
 import pandas as pd
-
+from statsmodels.stats.multitest import fdrcorrection
+import numpy as np
 
 def rank_genes(path_to_network: str, target_gene_set: list[str], centrality: str, sep: str = ' ',
-               num_permutations: int = 100, damping: float=0.85, query_gene_set=None) \
+               num_permutations: int = 1000, damping: float=0.85, 
+               alpha: float=0.05, query_gene_set=None) \
         -> pd.DataFrame:
     """Ranks the genes in the query gene set via empirical P-values based on their network centralities w.r.t. the
     target gene set.
@@ -18,10 +20,12 @@ def rank_genes(path_to_network: str, target_gene_set: list[str], centrality: str
     :type centrality: string
     :param sep: character used as separator in the input network; default: ' '
     :type sep: string
-    :param num_permutations: number of times input network is randomized; determines p-value resolution; default: 100
+    :param num_permutations: number of times input network is randomized; determines p-value resolution; default: 1000
     :type num_permutations: int
     :param damping: damping factor used for pageranke centrality; default: 0.85
     :type damping: float
+    :param alpha: parameter used for FDR correction
+    :type alpha: float
     :param query_gene_set: list of genes that should be ranked; if None, all genes in the network are ranked
     :type query_gene_set: list of strings or None
     :return: data frame sorted by p-value containing the results for all genes in the query set
@@ -47,6 +51,8 @@ def rank_genes(path_to_network: str, target_gene_set: list[str], centrality: str
         'degree': [network.degree_property_map('total')[v] for v in query_gene_set],
         'in_target_gene_set': [v in target_gene_set for v in query_gene_set]
     })
+    results["fdr_corrected_p_value"] = fdrcorrection(results["p_value"], alpha=alpha)[1]
+
     results.sort_values(by='p_value', inplace=True)
     results.reset_index(drop=True, inplace=True)
     return results
