@@ -42,8 +42,9 @@ for condition in ["pd", "ibd"]:
             results = {}            
             for i, qgs in enumerate(query_gene_sets):
                 result = sg.rank_genes('networks/iid_brain_ppi.txt', target_gene_set=target_gene_set, centrality='pagerank', query_gene_set=qgs, sep=",", num_permutations=num_permutations)
-                results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
-
+                #results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
+                results[os.path.splitext(filenames[i])[0]] = result[result["fdr_corrected_p_value"] < alpha].sort_values("fdr_corrected_p_value", ascending=True)
+                print(results[os.path.splitext(filenames[i])[0]])
             # draw Venn diagrams of all possible combinations with 3 query gene sets:
             res_3_combinations = list(combinations(results.keys(), 3))
             idxs_3 = list(combinations([0,1,2,3], 3))
@@ -66,7 +67,7 @@ for condition in ["pd", "ibd"]:
                 if condition == "pd":
                     ax = axs[col, row]
                 elif condition == "ibd":
-                    ax = axs[0]
+                    ax = axs
                 venn3([set(vals_a), set(vals_b), set(vals_c)], set_labels=set_labels, ax=ax, set_colors=[pal[idxs_3[i][0]], pal[idxs_3[i][1]], pal[idxs_3[i][2]]], alpha=0.8)
             
             fig.suptitle(f"Venn Diagrams: {condition.upper()}: {name}")
