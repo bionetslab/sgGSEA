@@ -10,7 +10,6 @@ from matplotlib_venn import venn2, venn3
 import matplotlib.pyplot as plt
 from itertools import combinations
 
-num_permutations = 1000
 
 # provided by Eliza:
 t_cell_migration = ["GO:0006935", "GO:0050900", "GO:0050901","GO:0042110", "GO:0030036", "GO:0038032", "GO:0007155", "GO:0007229",  "GO:0030335", "GO:2000408", "GO:0071347", "GO:0050776", "GO:0008369", "GO:0051493"]
@@ -27,55 +26,78 @@ processes = {"T cell migration": t_cell_migration,
                  "Proteinopathy": proteinopathy,
                  "Neuroimmune interaction": neuroimmune_interaction}
 
-for condition in ["pd", "ibd"]:
-    print("+++++++++++++++++++++++++++++", condition.upper(), "++++++++++++++++++++++++++++++++")
-    for alpha in tqdm([0.01, 0.05]):
-        # get query gene sets for condition:    
-        filenames = [f for f in os.listdir(data) if f.startswith(condition)]
-        query_gene_sets = [sg.get_query_gene_set(os.path.join(data, f), alpha=alpha) for f in os.listdir(data) if f.startswith(condition)]
 
-        for name in tqdm(processes, leave=False):
-            # get genes involved in the pathways of the described process
-            target_gene_set = sg.get_genes_for_multiple_pathway_process(processes[name])
+def plot_venn_diagram(condition, name, alpha, results):
+    # draw Venn diagrams of all possible combinations with 3 query gene sets:
+    res_3_combinations = list(combinations(results.keys(), 3))
+    idxs_3 = list(combinations([0,1,2,3], 3))
+    
+    sns.set_theme()
+    pal = sns.color_palette("magma", 4)
+    if condition == "pd":
+        fig, axs = plt.subplots(2, 2, figsize=(20,10))
+    elif condition == "ibd":
+        fig, axs = plt.subplots(1, 1, figsize=(10,10))
 
-            # calculate page rank score and (corrected) pvalues
-            results = {}            
-            for i, qgs in enumerate(query_gene_sets):
-                result = sg.rank_genes('networks/iid_brain_ppi.txt', target_gene_set=target_gene_set, centrality='pagerank', query_gene_set=qgs, sep=",", num_permutations=num_permutations)
-                #results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
-                results[os.path.splitext(filenames[i])[0]] = result[result["fdr_corrected_p_value"] < alpha].sort_values("fdr_corrected_p_value", ascending=True)
-                print(results[os.path.splitext(filenames[i])[0]])
-            # draw Venn diagrams of all possible combinations with 3 query gene sets:
-            res_3_combinations = list(combinations(results.keys(), 3))
-            idxs_3 = list(combinations([0,1,2,3], 3))
-            
-            sns.set_theme()
-            pal = sns.color_palette("magma", 4)
-            if condition == "pd":
-                fig, axs = plt.subplots(2, 2, figsize=(20,10))
-            elif condition == "ibd":
-                fig, axs = plt.subplots(1, 1, figsize=(10,10))
-        
-            for i in range(len(res_3_combinations)):
-                col = int(i/2) 
-                row = i % 2
-        
-                vals_a = results[res_3_combinations[i][0]]["symbol"].values
-                vals_b = results[res_3_combinations[i][1]]["symbol"].values
-                vals_c = results[res_3_combinations[i][2]]["symbol"].values
-                set_labels = [" vs.\n".join(" ".join(k.split("_")[1:-1]).split("vs")) for k in res_3_combinations[i]]
-                if condition == "pd":
-                    ax = axs[col, row]
-                elif condition == "ibd":
-                    ax = axs
-                venn3([set(vals_a), set(vals_b), set(vals_c)], set_labels=set_labels, ax=ax, set_colors=[pal[idxs_3[i][0]], pal[idxs_3[i][1]], pal[idxs_3[i][2]]], alpha=0.8)
-            
-            fig.suptitle(f"Venn Diagrams: {condition.upper()}: {name}")
-            plt.savefig(f"/data_nfs/je30bery/hiwi/sgGSEA/venn_diagrams/{condition}_{name}_alpha={alpha}.pdf")
-        
-            symbols = np.unique(np.concatenate([np.array(results[k]["symbol"]) for k in results]))
-            result_df = pd.DataFrame(index=symbols)
-            set_labels = [" vs. ".join(" ".join(k.split("_")[1:-1]).split("vs")) for k in results.keys()]
-            for i, k in enumerate(results.keys()):
-                result_df[set_labels[i]] = [(s in results[k]["symbol"].values) for s in result_df.index]
-            result_df.to_csv(f"/data_nfs/je30bery/hiwi/sgGSEA/venn_diagrams/{condition}_{name}_alpha={alpha}.csv")
+    for i in range(len(res_3_combinations)):
+        col = int(i/2) 
+        row = i % 2
+
+        vals_a = results[res_3_combinations[i][0]][results[res_3_combinations[i][0]]["fdr_corrected_p_value"] < alpha]["symbol"].values
+        vals_b = results[res_3_combinations[i][1]][results[res_3_combinations[i][1]]["fdr_corrected_p_value"] < alpha]["symbol"].values
+        vals_c = results[res_3_combinations[i][2]][results[res_3_combinations[i][2]]["fdr_corrected_p_value"] < alpha]["symbol"].values
+        set_labels = [" vs.\n".join(" ".join(k.split("_")[1:-1]).split("vs")) for k in res_3_combinations[i]]
+        if condition == "pd":
+            ax = axs[col, row]
+        elif condition == "ibd":
+            ax = axs
+        venn3([set(vals_a), set(vals_b), set(vals_c)], set_labels=set_labels, ax=ax, set_colors=[pal[idxs_3[i][0]], pal[idxs_3[i][1]], pal[idxs_3[i][2]]], alpha=0.8)
+    
+    fig.suptitle(f"Venn Diagrams: {condition.upper()}: {name}")
+    plt.savefig(f"/data/bionets/je30bery/hiwi/sgGSEA/venn_diagrams/{condition}_{name}_alpha={alpha}.pdf")
+
+
+def create_csv_files(condition, name, alpha, results):
+    symbols = np.unique(np.concatenate([np.array(results[k]["symbol"]) for k in results]))
+    result_df = pd.DataFrame(index=symbols)
+    # write csv:
+    set_labels = [" vs. ".join(" ".join(k.split("_")[1:-1]).split("vs")) for k in results.keys()]
+    set_labels = ["FDR corrected P-value " + l for l in set_labels]
+    
+    result_df = pd.DataFrame(index=symbols, columns=set_labels)
+    for i, k in enumerate(results.keys()):
+        # result_df[set_labels[i]] = [(s in results[k]["symbol"].values) for s in result_df.index]      
+        for s in symbols:
+            try:
+                result_df[set_labels[i]].loc[s] = results[k][results[k]["symbol"] == s]["fdr_corrected_p_value"].values[0]
+            except IndexError:
+                result_df[set_labels[i]].loc[s] = np.nan
+    result_df.to_csv(f"/data/bionets/je30bery/hiwi/sgGSEA/venn_diagrams/{condition}_{name}_alpha={alpha}.csv")
+    return result_df
+
+
+def main(num_permutations):
+    for condition in ["pd", "ibd"]:
+        print("+++++++++++++++++++++++++++++", condition.upper(), "++++++++++++++++++++++++++++++++")
+        for alpha in tqdm([0.01, 0.05]):
+            # get query gene sets for condition:    
+            filenames = [f for f in os.listdir(data) if f.startswith(condition)]
+            query_gene_sets = [sg.get_query_gene_set(os.path.join(data, f), alpha=alpha) for f in os.listdir(data) if f.startswith(condition)]
+    
+            for name in tqdm(processes, leave=False):
+                # get genes involved in the pathways of the described process
+                target_gene_set = sg.get_genes_for_multiple_pathway_process(processes[name])
+    
+                # calculate page rank score and (corrected) pvalues
+                results = {}            
+                for i, qgs in enumerate(query_gene_sets):
+                    result = sg.rank_genes('networks/iid_brain_ppi.txt', target_gene_set=target_gene_set, centrality='pagerank', query_gene_set=qgs, sep=",", num_permutations=num_permutations)
+                    #results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
+                    results[os.path.splitext(filenames[i])[0]] = result.sort_values("fdr_corrected_p_value", ascending=True)
+                
+                plot_venn_diagram(condition, name, alpha, results)
+                create_csv_files(condition, name, alpha, results)
+                
+                
+if __name__ == "__main__":
+    main(1000)
