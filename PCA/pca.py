@@ -6,9 +6,15 @@ import numpy as np
 import os
 import seaborn as sns
 import json
-# choose problem: "ibd" or "pd"
+
+
+# @ELIZA: choose problem: "ibd" or "pd"
 problem = "ibd"
-base_path = f"/data_nfs/je30bery/hiwi/data/{problem}"
+
+# @ELIZA: put in the path:
+# in your case it will look something like this f"C:\Users\annam\sgGSEA\data\original\{problem}"
+# the "f" needs to be in front of the address, so that the value of the variable "problem" gets inserted
+base_path = f"/data/bionets/je30bery/hiwi/sgGSEA/data/original/{problem}"
 
 
 # load fpkm values
@@ -26,21 +32,35 @@ expression_matrix_log = np.log1p(expression_matrix.astype(float))
 # use PCA
 pca = PCA(2)
 transformed = pca.fit_transform(expression_matrix_log.T)
+
+
 # load label mappings
+# @ELIZA: if you want to change the names in the legend, you need to open the file "mappings.json" and change them there
 with open('./PCA/mappings.json', 'r') as json_file:
-    label_mapping  = json.load(json_file)[problem]#
+    label_mapping  = json.load(json_file)[problem]
+    
+    
 # map labels
 expression_matrix.columns = [label_mapping["_".join(c.split("_")[:-1])] for c in expression_matrix.columns]
 # plot and color by label, save plot
+
+# @ELIZA: here you can change the theme as described here https://seaborn.pydata.org/generated/seaborn.set_theme.html
 sns.set_theme("notebook")
+
+# @ELIZA: here you can change the colors as described here https://seaborn.pydata.org/generated/seaborn.color_palette.html
+# if you need any specific colors, ChatGPT knows how to put them into a seaborn palette :D
+
 pal = sns.color_palette("magma", len(np.unique(expression_matrix.columns)))
+
 for i, condition in enumerate(np.unique(expression_matrix.columns)):
     condition_samples = transformed[np.where(expression_matrix.columns == condition)]
     plt.scatter(condition_samples[:,0], condition_samples[:,1], label=condition, color=pal[i])
+    
+# @ELIZA: here you can change things like fontsize or title or where the file will be saved
 plt.legend(fontsize=8)
 plt.title(f"PCA on log-transformed expression data of the {problem.upper()} dataset")
 plt.xlabel("PC1")
 plt.ylabel("PC2")
 plt.tight_layout()
-plt.savefig(f"/data_nfs/je30bery/hiwi/sgGSEA/PCA/pca_{problem}.pdf")
+plt.savefig(f"pca_{problem}.pdf")
 
