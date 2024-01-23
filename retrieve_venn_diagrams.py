@@ -76,10 +76,11 @@ def create_csv_files(condition, name, alpha, results):
     return result_df
 
 
-def main(num_permutations):
+def main():
+    num_permutations = 1000
     for condition in ["pd", "ibd"]:
         print("+++++++++++++++++++++++++++++", condition.upper(), "++++++++++++++++++++++++++++++++")
-        for alpha in tqdm([0.01, 0.05]):
+        for alpha in tqdm([0.1, 0.2, 0.3, 0.4]):
             # get query gene sets for condition:    
             filenames = [f for f in os.listdir(data) if f.startswith(condition)]
             query_gene_sets = [sg.get_query_gene_set(os.path.join(data, f), alpha=alpha) for f in os.listdir(data) if f.startswith(condition)]
@@ -95,9 +96,9 @@ def main(num_permutations):
                     #results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
                     results[os.path.splitext(filenames[i])[0]] = result.sort_values("fdr_corrected_p_value", ascending=True)
                 
-                plot_venn_diagram(condition, name, alpha, results)
+                # plot_venn_diagram(condition, name, alpha, results)
                 create_csv_files(condition, name, alpha, results)
                 
                 
 if __name__ == "__main__":
-    main(1000)
+    main()
