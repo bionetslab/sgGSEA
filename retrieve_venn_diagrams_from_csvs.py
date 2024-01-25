@@ -22,7 +22,7 @@ def main():
     # retrieve_venn_diagram_from_csv(condition, name, alpha)
     
     for condition in ["pd", "ibd"]:
-        for alpha in [0.01, 0.05, 0.1, 0.2, 0.3, 0.4]:
+        for alpha in [0.1, 0.2, 0.3, 0.4]:
             for name in ["T cell migration", "Inflammation", "Cell death", "Proteinopathy", "Neuroimmune interaction"]:
                 retrieve_venn_diagram_from_csv(condition, name, alpha)
     

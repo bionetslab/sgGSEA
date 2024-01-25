@@ -12,19 +12,30 @@ from itertools import combinations
 
 
 # provided by Eliza:
-t_cell_migration = ["GO:0006935", "GO:0050900", "GO:0050901","GO:0042110", "GO:0030036", "GO:0038032", "GO:0007155", "GO:0007229",  "GO:0030335", "GO:2000408", "GO:0071347", "GO:0050776", "GO:0008369", "GO:0051493"]
-inflammation = ["GO:0006954", "GO:0050729", "GO:0050728", "GO:0071347", "GO:0050727", "GO:0034341", "GO:0002456", "GO:0050871", "GO:0019221"]
-cell_death = ["GO:0012501", "GO:0006915", "GO:0043065", "GO:0043066", "GO:0070265", "GO:0043068", "GO:0006974", "GO:0010941", "GO:0097193", "GO:0097194", "GO:0006979", "GO:2001237", "GO:0001836", "GO:0010506", "GO:0034976", "GO:0034612"]
-proteinopathy = ["GO:0006457", "GO:0051087", "GO:0006517", "GO:0051788", "GO:0050821", "GO:0033554", "GO:0006914", "GO:0051260", "GO:0051787", "GO:0051259", "GO:0071216", "GO:0031647", "GO:0097033", "GO:0050808", "GO:0097035", "GO:1903900"]
-neuroimmune_interaction = ["GO:0007267", "GO:0150078", "GO:0019221", "GO:0038182", "GO:0010976", "GO:0043524", "GO:0030182", "GO:0043525", "GO:1901215", "GO:0071374"]
+#t_cell_migration = ["GO:0006935", "GO:0050900", "GO:0050901","GO:0042110", "GO:0030036", "GO:0038032", "GO:0007155", "GO:0007229",  "GO:0030335", "GO:2000408", "GO:0071347", "GO:0050776", "GO:0008369", "GO:0051493"]
+#inflammation = ["GO:0006954", "GO:0050729", "GO:0050728", "GO:0071347", "GO:0050727", "GO:0034341", "GO:0002456", "GO:0050871", "GO:0019221"]
+#cell_death = ["GO:0012501", "GO:0006915", "GO:0043065", "GO:0043066", "GO:0070265", "GO:0043068", "GO:0006974", "GO:0010941", "GO:0097193", "GO:0097194", "GO:0006979", "GO:2001237", "GO:0001836", "GO:0010506", "GO:0034976", "GO:0034612"]
+#proteinopathy = ["GO:0006457", "GO:0051087", "GO:0006517", "GO:0051788", "GO:0050821", "GO:0033554", "GO:0006914", "GO:0051260", "GO:0051787", "GO:0051259", "GO:0071216", "GO:0031647", "GO:0097033", "GO:0050808", "GO:0097035", "GO:1903900"]
+#neuroimmune_interaction = ["GO:0007267", "GO:0150078", "GO:0019221", "GO:0038182", "GO:0010976", "GO:0043524", "GO:0030182", "GO:0043525", "GO:1901215", "GO:0071374"]
 
+protein_aggregation = ["GO:0051087"]
+autophagy = ["GO:0006914"]
+response_to_misfolded_protein = ["GO:0051788"]
+cellular_response_to_protein_misfolding = ["GO:0071216"]
+protein_deposition = ["GO:0097033"]
 data = "data/adj_pvals_only/"
 
-processes = {"T cell migration": t_cell_migration,
-                 "Inflammation": inflammation,
-                 "Cell death": cell_death,
-                 "Proteinopathy": proteinopathy,
-                 "Neuroimmune interaction": neuroimmune_interaction}
+processes = {"Protein aggregation": protein_aggregation,
+             "Autophagy": autophagy,
+             "Response to misfolded protein": response_to_misfolded_protein,
+             "Cellular response to protein misfolding": cellular_response_to_protein_misfolding,
+             "Protein deposition": protein_deposition}
+
+#                   "T cell migration": t_cell_migration,
+#                 "Inflammation": inflammation,
+#                 "Cell death": cell_death,
+#                 "Proteinopathy": proteinopathy,
+#                 "Neuroimmune interaction": neuroimmune_interaction}
 
 
 def plot_venn_diagram(condition, name, alpha, results):
@@ -80,18 +91,17 @@ def main():
     num_permutations = 1000
     for condition in ["pd", "ibd"]:
         print("+++++++++++++++++++++++++++++", condition.upper(), "++++++++++++++++++++++++++++++++")
-        for alpha in tqdm([0.1, 0.2, 0.3, 0.4]):
-            # get query gene sets for condition:    
+        for alpha in tqdm([0.01, 0.05, 0.1, 0.2, 0.3, 0.4]):
+            # get query gene sets for condition:   
             filenames = [f for f in os.listdir(data) if f.startswith(condition)]
             query_gene_sets = [sg.get_query_gene_set(os.path.join(data, f), alpha=alpha) for f in os.listdir(data) if f.startswith(condition)]
-    
+
             for name in tqdm(processes, leave=False):
                 # get genes involved in the pathways of the described process
                 target_gene_set = sg.get_genes_for_multiple_pathway_process(processes[name])
-    
                 # calculate page rank score and (corrected) pvalues
                 results = {}            
-                for i, qgs in enumerate(query_gene_sets):
+                for i, qgs in tqdm(enumerate(query_gene_sets)):
                     result = sg.rank_genes('networks/iid_brain_ppi.txt', target_gene_set=target_gene_set, centrality='pagerank', query_gene_set=qgs, sep=",", num_permutations=num_permutations)
                     #results[os.path.splitext(filenames[i])[0]] = result[result["p_value"] < alpha].sort_values("p_value", ascending=True)
                     results[os.path.splitext(filenames[i])[0]] = result.sort_values("fdr_corrected_p_value", ascending=True)
