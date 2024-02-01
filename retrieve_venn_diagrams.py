@@ -99,6 +99,9 @@ def main():
             for name in tqdm(processes, leave=False):
                 # get genes involved in the pathways of the described process
                 target_gene_set = sg.get_genes_for_multiple_pathway_process(processes[name])
+                if target_gene_set is None:
+                    print("skipping", name)
+                    continue
                 # calculate page rank score and (corrected) pvalues
                 results = {}            
                 for i, qgs in tqdm(enumerate(query_gene_sets)):

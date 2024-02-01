@@ -49,6 +49,7 @@ def get_genes_for_multiple_pathway_process(pathways):
             target_gene_set += pathways[k]
         except:
             print(k, "not found")
+            return None
     target_gene_set = np.unique(target_gene_set)
     return target_gene_set
         

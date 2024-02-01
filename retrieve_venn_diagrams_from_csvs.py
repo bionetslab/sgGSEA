@@ -8,7 +8,19 @@ import os
 
 # @LIZA: put in the path:
 # in your case it will look something like this "C:\Users\annam\sgGSEA\venn_diagrams" (the backslashes on windows need to be from top left to bottom right)
-data_path = "/data/bionets/je30bery/hiwi/sgGSEA/venn_diagrams"
+data_path = "/data_nfs/je30bery/hiwi/sgGSEA/venn_diagrams"
+protein_aggregation = ["GO:0051087"]
+autophagy = ["GO:0006914"]
+response_to_misfolded_protein = ["GO:0051788"]
+cellular_response_to_protein_misfolding = ["GO:0071216"]
+protein_deposition = ["GO:0097033"]
+data = "data/adj_pvals_only/"
+
+processes = {#"Protein aggregation": protein_aggregation,
+             "Autophagy": autophagy,
+             "Response to misfolded protein": response_to_misfolded_protein,
+             "Cellular response to protein misfolding": cellular_response_to_protein_misfolding,
+             "Protein deposition": protein_deposition}
 
 # @ LIZA: if you only want to produce one file:
 # 1) put Hashtags in front of the for loops (the three lines below that start with "for") and the line after that 
@@ -22,8 +34,8 @@ def main():
     # retrieve_venn_diagram_from_csv(condition, name, alpha)
     
     for condition in ["pd", "ibd"]:
-        for alpha in [0.1, 0.2, 0.3, 0.4]:
-            for name in ["T cell migration", "Inflammation", "Cell death", "Proteinopathy", "Neuroimmune interaction"]:
+        for alpha in [0.01, 0.05, 0.1, 0.2, 0.3, 0.4]:
+            for name in processes.keys():
                 retrieve_venn_diagram_from_csv(condition, name, alpha)
     
 
